@@ -1,37 +1,22 @@
 from libs import utilities
-
+import config as cfg
 import streamlit as st
 from libs.streaming import StreamHandler
 
-from langchain_openai import ChatOpenAI
 from langchain_community.chat_models import ChatOllama
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 
 st.set_page_config(
     page_title="OpenChat",
-)#, page_icon="⭐")
+) 
 st.header("OpenChat")
-# st.write(
-# """
-# Chat with Open Source Mistral
-
-# [![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/rhpds/OpenChatBot.git)
-# """)
-# st.write(
-# """
-# Simple AI Chatbot with Ollama Mistral Backend
-
-# Use as a normal AI Chatbot in the same Style as ChatGPT or Claude
-
-# All data remains local on your machine"
-# """
-# )
 
 
 class ContextChatbot:
     def __init__(self):
-        self.openai_model = utilities.configure_openai()
+        # self.openai_model = utilities.streamlit() # configure_openai()
+        utilities.setup_streamlit() # configure_openai()
 
     @st.cache_resource
     def setup_chain(_self):
