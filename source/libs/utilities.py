@@ -6,8 +6,6 @@ from datetime import datetime
 
 #decorator
 def enable_chat_history(func):
-#    if os.environ.get("OPENAI_API_KEY"):
-
     # to clear chat history after swtching chatbot
     current_page = func.__qualname__
     if "current_page" not in st.session_state:
@@ -22,6 +20,7 @@ def enable_chat_history(func):
 
     avatar = "https://avatars.dicebear.com/api/avataaars/1.svg" if "user" == "user" else "https://avatars.dicebear.com/api/avataaars/2.svg"
     # to show chat history on ui
+    
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
     for msg in st.session_state["messages"]:
@@ -53,51 +52,19 @@ def display_msg(msg, author):
     st.chat_message(author).write(msg)
 
 def configure_openai():
-    print("Configuring - old OpenAI Code")
-    st.sidebar.title("Chatbot Configuration")
-    st.sidebar.write("This Chatbot is powered by locally running Mistral")
-    st.sidebar.write("\nWe can put whatever we like here")
-    st.sidebar.write("...")
-    st.sidebar.write("...")
-    st.sidebar.write("...")
+    # print("Configuring - old OpenAI Code")
+    st.sidebar.title("OpenChatBot")
+    st.sidebar.write(
     """
+    [![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/rhpds/OpenChatBot.git)
     
+    Chat with Open Source Mistral. Use as a normal AI Chatbot in the same Style as ChatGPT or Claude
+
+    All data remains **local** on your machine
     """
+    )
 
-    # openai_api_key = st.sidebar.text_input(
-    #     label="OpenAI API Key",
-    #     type="password",
-    #     value=st.session_state['OPENAI_API_KEY'] if 'OPENAI_API_KEY' in st.session_state else '',
-    #     placeholder="sk-..."
-    #     )
-    # if openai_api_key:
-    if True:
-        st.session_state['OPENAI_API_KEY'] = "foo"
-        # st.session_state['OPENAI_API_KEY'] = openai_api_key
-        # os.environ['OPENAI_API_KEY'] = openai_api_key
-    else:
-        st.error("Please add your OpenAI API key to continue.")
-        st.info("Obtain your key from this link: https://platform.openai.com/account/api-keys")
-        st.stop()
-    print("## A level 2 title")
+    st.session_state['OPENAI_API_KEY'] = "foo"
     model = "gpt-3.5-turbo"
-    # try:
-    #     client = openai.OpenAI()
-    #     available_models = [{"id": i.id, "created":datetime.fromtimestamp(i.created)} for i in client.models.list() if str(i.id).startswith("gpt")]
-    #     available_models = sorted(available_models, key=lambda x: x["created"])
-    #     available_models = [i["id"] for i in available_models]
-
-    #     model = st.sidebar.selectbox(
-    #         label="Model",
-    #         options=available_models,
-    #         index=available_models.index(st.session_state['OPENAI_MODEL']) if 'OPENAI_MODEL' in st.session_state else 0
-    #     )
     st.session_state['OPENAI_MODEL'] = model
-    # except openai.AuthenticationError as e:
-    #     st.error(e.body["message"])
-    #     st.stop()
-    # except Exception as e:
-    #     print(e)
-    #     st.error("Something went wrong. Please try again later.")
-    #     st.stop()
     return model
