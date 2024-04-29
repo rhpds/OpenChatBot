@@ -1,7 +1,7 @@
 import os
-import utils
+from libs import utilities
 import streamlit as st
-from streaming import StreamHandler
+from libs.streaming import StreamHandler
 
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
@@ -12,26 +12,30 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import DocArrayInMemorySearch
 
 st.set_page_config(page_title="ChatPDF", page_icon="📄")
-st.header('Chat with your documents (Basic RAG)')
-st.write('Has access to custom documents and can respond to user queries by referring to the content within those documents')
-st.write('[![view source code ](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/shashankdeshpande/langchain-chatbot/blob/master/pages/4_%F0%9F%93%84_chat_with_your_documents.py)')
+st.header("Chat with your documents (Basic RAG)")
+st.write(
+    "Has access to custom documents and can respond to user queries by referring to the content within those documents"
+)
+st.write(
+    "[![view source code ](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/shashankdeshpande/langchain-chatbot/blob/master/pages/4_%F0%9F%93%84_chat_with_your_documents.py)"
+)
+
 
 class CustomDataChatbot:
-
     def __init__(self):
-        self.openai_model = utils.configure_openai()
+        self.openai_model = utilities.configure_openai()
 
     def save_file(self, file):
-        folder = 'tmp'
+        folder = "tmp"
         if not os.path.exists(folder):
             os.makedirs(folder)
-        
-        file_path = f'./{folder}/{file.name}'
-        with open(file_path, 'wb') as f:
+
+        file_path = f"./{folder}/{file.name}"
+        with open(file_path, "wb") as f:
             f.write(file.getvalue())
         return file_path
 
-    @st.spinner('Analyzing documents..')
+    @st.spinner("Analyzing documents..")
     def setup_qa_chain(self, uploaded_files):
         # Load documents
         docs = []
@@ -39,11 +43,10 @@ class CustomDataChatbot:
             file_path = self.save_file(file)
             loader = PyPDFLoader(file_path)
             docs.extend(loader.load())
-        
+
         # Split documents
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1500,
-            chunk_overlap=200
+            chunk_size=1500, chunk_overlap=200
         )
         splits = text_splitter.split_documents(docs)
 
@@ -53,26 +56,27 @@ class CustomDataChatbot:
 
         # Define retriever
         retriever = vectordb.as_retriever(
-            search_type='mmr',
-            search_kwargs={'k':2, 'fetch_k':4}
+            search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4}
         )
 
-        # Setup memory for contextual conversation        
+        # Setup memory for contextual conversation
         memory = ConversationBufferMemory(
-            memory_key='chat_history',
-            return_messages=True
+            memory_key="chat_history", return_messages=True
         )
 
         # Setup LLM and QA chain
         llm = ChatOpenAI(model_name=self.openai_model, temperature=0, streaming=True)
-        qa_chain = ConversationalRetrievalChain.from_llm(llm, retriever=retriever, memory=memory, verbose=True)
+        qa_chain = ConversationalRetrievalChain.from_llm(
+            llm, retriever=retriever, memory=memory, verbose=True
+        )
         return qa_chain
 
-    @utils.enable_chat_history
+    @utilities.enable_chat_history
     def main(self):
-
         # User Inputs
-        uploaded_files = st.sidebar.file_uploader(label='Upload PDF files', type=['pdf'], accept_multiple_files=True)
+        uploaded_files = st.sidebar.file_uploader(
+            label="Upload PDF files", type=["pdf"], accept_multiple_files=True
+        )
         if not uploaded_files:
             st.error("Please upload PDF documents to continue!")
             st.stop()
@@ -82,16 +86,18 @@ class CustomDataChatbot:
         if uploaded_files and user_query:
             qa_chain = self.setup_qa_chain(uploaded_files)
 
-            utils.display_msg(user_query, 'user')
+            utilities.display_msg(user_query, "user")
 
             with st.chat_message("assistant"):
                 st_cb = StreamHandler(st.empty())
                 result = qa_chain.invoke(
-                    {"question":user_query},
-                    {"callbacks": [st_cb]}
+                    {"question": user_query}, {"callbacks": [st_cb]}
                 )
                 response = result["answer"]
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": response}
+                )
+
 
 if __name__ == "__main__":
     obj = CustomDataChatbot()
