@@ -1,0 +1,43 @@
+= Overview
+
+
+== Usage
+
+. Create a new virtual environment (or if you are comfortable with it, use an existing environment)
++
+
+[source,sh]
+----
+python3.11 -m venv venv         # The .gitignore prevents your venv from being committed
+source venv/bin/activate
+----
+
+. Install the dependencies
++
+[source,sh]
+----
+pip install -r requirements.txt
+----
+
+. Run the Streamlit application
++
+[source,sh]
+----
+streamlit run ChatBots.py 
+----
+
+
+
+== Frameworks and Libraries
+
+* LangChain
+* Streamlit
+* Ollama (LLM Runtime)
+* Mistral (Company and LLM of the same name)
+
+== Acknowledgments and Thanks
+
+NOTE: Originally drew very heavilye from link:https://github.com/shashankdeshpande/langchain-chatbot[langchain-chatbot]
+
+* Thanks to the authors of the following examples, libraries, patterns, and tools:
+* link:https://github.com/shashankdeshpande/langchain-chatbot[langchain-chatbot]
