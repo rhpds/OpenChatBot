@@ -23,7 +23,7 @@ pip install -r requirements.txt
 +
 [source,sh]
 ----
-streamlit run ChatBots.py 
+streamlit run source/chatbot-with-memory.py
 ----
 
 
