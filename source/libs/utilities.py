@@ -79,11 +79,26 @@ def setup_streamlit():
     st.sidebar.title("OpenChatBot")
     st.sidebar.write(
     """
-    [![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/rhpds/OpenChatBot.git)
-    
-    Chat with Open Source Mistral. Use as a normal AI Chatbot in the same Style as ChatGPT or Claude
+    ## GitHub Repository
 
-    All data remains **local** on your machine
+    [![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/rhpds/OpenChatBot.git)
+
+    ## Disclaimer
+
+    **Internal use only - Experimental**
+    * This Chatbot lets you experiment with different prompts using a local LLM
+    * Interactions with Bot are monitoried, keep it work related and not private information
+    * Do not share sensitive data with the bot
+    * This bot will come and go as it is still in early development stages
+
+    ## Bot Behavior
+    * Bots and LLMs speak words that make sense, but are not necessarily true.
+    * Bot currently has no access to any company internal knowledge base
+
+    ## Example prompts: 
+    * What are the top concerns for a network engineer in an insurance company?
+    * You are a marketing content writer, help me make the following text more oriented for a seller to help them pitch this information to their customer. (Copy paste your text)
+
     """
     )
     return
