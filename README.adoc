@@ -2,6 +2,21 @@
 
 
 == Usage
+. Install ollama on your machine:
++
+[source,sh]
+----
+curl -fsSL https://ollama.com/install.sh | sh
+
+----
+NOTE:  If you are running on Mac/Windows, just download from Ollama website: link:https://ollama.com/download/mac[ollama for mac] link:https://ollama.com/download/windows[ollama for windows]
+
+. Download your desired module:
++
+[source,sh]
+----
+ollama download mistral
+----
 
 . Create a new virtual environment (or if you are comfortable with it, use an existing environment)
 +
@@ -23,7 +38,7 @@ pip install -r requirements.txt
 +
 [source,sh]
 ----
-streamlit run source/chatbot-with-memory.py
+streamlit run source/chatbot-with-memory.py --server.port=8000
 ----
 
 
