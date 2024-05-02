@@ -1,34 +1,30 @@
 import os
-import config as cfg
 
 # from templates.htmlTemplates import css, bot_template, user_template
-from htmlTemplates import css, bot_template, user_template
-
-
+from .templates.htmlTemplates import css, bot_template, user_template
 import random
 import streamlit as st
 from datetime import datetime
 
 
-# decorator
 def enable_chat_history(func):
     # to clear chat history after swtching chatbot
-    current_page = func.__qualname__
-    if "current_page" not in st.session_state:
-        st.session_state["current_page"] = current_page
-    if st.session_state["current_page"] != current_page:
-        try:
-            st.cache_resource.clear()
-            del st.session_state["current_page"]
-            del st.session_state["messages"]
-        except:
-            pass
+    #current_page = func.__qualname__
+    # if "current_page" not in st.session_state:
+    #     st.session_state["current_page"] = current_page
+    # if st.session_state["current_page"] != current_page:
+    #     try:
+    #         st.cache_resource.clear()
+    #         del st.session_state["current_page"]
+    #         del st.session_state["messages"]
+    #     except:
+    #         pass
 
-    avatar = (
-        "https://avatars.dicebear.com/api/avataaars/1.svg"
-        if "user" == "user"
-        else "https://avatars.dicebear.com/api/avataaars/2.svg"
-    )
+    # avatar = (
+    #     "https://avatars.dicebear.com/api/avataaars/2.svg"
+    #     if "user" == "user"
+    #     else "https://avatars.dicebear.com/api/avataaars/2.svg"
+    # )
     # to show chat history on ui
 
     if "messages" not in st.session_state:
@@ -47,6 +43,8 @@ def enable_chat_history(func):
     # with st.chat_message(messages["role"], avatar=avatar):
     #     st.markdown(messages["content"])
 
+
+## Not sure what this does
     def execute(*args, **kwargs):
         func(*args, **kwargs)
 
@@ -64,9 +62,9 @@ def display_msg(msg, author):
         {
             "role": author,
             "content": msg,
-            "avatar": "https://avatars.dicebear.com/api/avataaars/1.svg"
+            "avatar": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Red_Hat_logo.svg/2560px-Red_Hat_logo.svg.png"
             if author == "user"
-            else "https://avatars.dicebear.com/api/avataaars/2.svg",
+            else "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Red_Hat_logo.svg/2560px-Red_Hat_logo.svg.png",
         }
     )
     st.chat_message(author).write(msg)
