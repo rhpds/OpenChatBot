@@ -2,8 +2,8 @@
 # LLM Configuration
 
 MODEL = 'mistral'
-BASE_URL='http://192.168.1.171:11434'
-#BASE_URL='127.0.0.1:11434'
+#BASE_URL='http://192.168.1.171:11434'
+BASE_URL='127.0.0.1:11434'
 # Streamlit Headers
 
 
