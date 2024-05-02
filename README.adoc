@@ -38,7 +38,7 @@ pip install -r requirements.txt
 +
 [source,sh]
 ----
-streamlit run source/chatbot-with-memory.py --server.port=8000
+streamlit run src/main.py --server.port=8000
 ----
 
 
