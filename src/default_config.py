@@ -1,12 +1,11 @@
 
 # LLM Configuration
+## TODO: This should at some point be converted to YAML, making it easier to have more complex structures. 
 
 MODEL = 'mistral'
 #BASE_URL='http://192.168.1.171:11434'
-BASE_URL='127.0.0.1:11434'
+BASE_URL='http://localhost:11434'
 # Streamlit Headers
-
-
 PAGE_TITLE="OpenChat"
 
 # STREAMLIT_PAGE_TITLE = 'Ragnarok: Chat with **your** Data'

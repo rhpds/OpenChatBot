@@ -4,11 +4,15 @@ from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 import default_config as cfg
 from langchain.callbacks.base import BaseCallbackHandler
+from .chains import *
 
-### TODOs 
+
+### TODO:
 # * See how StreamHandler can fit into ContextChatbot class
 # * Class should have nothing hardcoded, or using default_config directly, values should be passed when creating the object in main.py 
 
+### Development VARS
+with_rag=True
 
 class StreamHandler(BaseCallbackHandler):
     
@@ -21,6 +25,7 @@ class StreamHandler(BaseCallbackHandler):
         self.container.markdown(self.text)
 
 class ContextChatbot:
+    ## TODO: This fuction should not be here, it should be part of the overall APP code
     def setup_streamlit(self):
         """
         Function to setup streamlit titles etc configurations
@@ -54,12 +59,10 @@ class ContextChatbot:
         """
         )
         return
-
-
-
     
     def __init__(self):
         self.setup_streamlit() 
+    
     ## TODO: when this line is removed, the chatbot stops having memory, this should just cache, but, this might be another issue.
     """ in streamlit python library, what does st.cache_resource do? 
     In Streamlit Python library, st.cache_resource is a decorator used to cache the results of a function or a computation to improve the performance 
@@ -67,7 +70,7 @@ class ContextChatbot:
     there instead of re-computing it every time the same function is called with the same input. This can significantly reduce the amount of time 
     required to run your application, especially if the function involves expensive computations or I/O operations.
     """
-    @st.cache_resource
+    @st.cache_resource 
     def setup_chain(_self):
         memory = ConversationBufferMemory()
         ## TODO: This should be set to receive model, base_url, and others when called, not use cfg file (or use it if nothing is provided)
@@ -79,21 +82,42 @@ class ContextChatbot:
         )
         chain = ConversationChain(llm=llm, memory=memory, verbose=True)
         return chain
+    
+    def setup_rag_chain(_self):
+        ## This is the path, relative to where the python/streamlit was called
+        db_directory = "./src/libs/loaders/Chroma_01"
 
+        vectordb = load_vectordb_from_disk(db_directory)
+        rag_chain = get_rag_chain_with_sources(vectordb)
+
+        return rag_chain
     def main(self):
-        chain = self.setup_chain()
-        ## TODO: Make variable
+        
         user_query = st.chat_input(placeholder="Ask me anything!")
-        if user_query:
-            self.display_msg(user_query, "user")
-            with st.chat_message("assistant"):
-                st_cb = StreamHandler(st.empty())
-                result = chain.invoke({"input": user_query}, {"callbacks": [st_cb]})
-                response = result["response"]
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": response}
-                )
-
+        if with_rag:
+            chain = self.setup_rag_chain()
+            if user_query:
+                self.display_msg(user_query, "user")
+                with st.chat_message("assistant"):
+                    st_cb = StreamHandler(st.empty())
+                    result = chain.invoke({"input": user_query}, {"callbacks": [st_cb]})
+                    #result = chain.invoke(user_query)
+                    response = result["response"]
+                    print(response)
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": response}
+                    )
+        else:
+            chain = self.setup_chain()
+            if user_query:
+                self.display_msg(user_query, "user")
+                with st.chat_message("assistant"):
+                    st_cb = StreamHandler(st.empty())
+                    result = chain.invoke({"input": user_query}, {"callbacks": [st_cb]})
+                    response = result["response"]
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": response}
+                    )            
     ## TODO: Make variable the avatar part isn't working here, and should be defined in the config file
     def display_msg(self,msg, author):
         """Method to display message on the UI
