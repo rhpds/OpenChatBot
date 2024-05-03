@@ -6,7 +6,7 @@ st.set_page_config(
 ) 
 st.header("OpenChat")
 
-
 if __name__ == "__main__":
     obj = ContextChatbot()
+
     obj.main()

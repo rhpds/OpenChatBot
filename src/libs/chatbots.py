@@ -5,14 +5,17 @@ from langchain.memory import ConversationBufferMemory
 import default_config as cfg
 from langchain.callbacks.base import BaseCallbackHandler
 from .chains import *
-
+from streamlit.runtime.scriptrunner import add_script_run_ctx
+#from contextvars import ContextVar
+import concurrent.futures
+from contextvars import copy_context
 
 ### TODO:
-# * See how StreamHandler can fit into ContextChatbot class
+# * See if StreamHandler can fit into ContextChatbot class
 # * Class should have nothing hardcoded, or using default_config directly, values should be passed when creating the object in main.py 
 
 ### Development VARS
-with_rag=True
+with_rag=False
 
 class StreamHandler(BaseCallbackHandler):
     
@@ -23,6 +26,7 @@ class StreamHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs):
         self.text += token
         self.container.markdown(self.text)
+
 
 class ContextChatbot:
     ## TODO: This fuction should not be here, it should be part of the overall APP code
@@ -82,7 +86,7 @@ class ContextChatbot:
         )
         chain = ConversationChain(llm=llm, memory=memory, verbose=True)
         return chain
-    
+    @st.cache_resource 
     def setup_rag_chain(_self):
         ## This is the path, relative to where the python/streamlit was called
         db_directory = "./src/libs/loaders/Chroma_01"
@@ -91,6 +95,11 @@ class ContextChatbot:
         rag_chain = get_rag_chain_with_sources(vectordb)
 
         return rag_chain
+    def run_in_executor(self,func, *args, **kwargs):
+        context = copy_context()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            return executor.submit(context.run, func, *args, **kwargs).result()
+
     def main(self):
         
         user_query = st.chat_input(placeholder="Ask me anything!")
@@ -98,25 +107,38 @@ class ContextChatbot:
             chain = self.setup_rag_chain()
             if user_query:
                 self.display_msg(user_query, "user")
-                with st.chat_message("assistant"):
-                    st_cb = StreamHandler(st.empty())
-                    result = chain.invoke({"input": user_query}, {"callbacks": [st_cb]})
-                    #result = chain.invoke(user_query)
-                    response = result["response"]
-                    print(response)
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": response}
-                    )
+                result = chain.invoke(user_query)
+                unique_sources = set()
+                for element in result['context']:
+                    source = element.metadata['source']
+                    unique_sources.add(source)  # Add the source to the set, duplicates will not be added
+
+                    # Join all unique sources into a single string separated by a specific separator, for example, a newline or a comma
+                combined_sources = ', '.join(unique_sources)
+                #result["response"] += '\n Sources: \n '.join(combined_sources)
+                print(combined_sources)
+                response = result["response"]
+                if response:
+                    with st.chat_message("assistant"):
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": response})                        
+                        st.write(response)
+                        st.write("Links do Documents:")
+                        st.write(combined_sources)
+                        result["response"]=""
+                        #del combined_sources
         else:
             chain = self.setup_chain()
             if user_query:
                 self.display_msg(user_query, "user")
                 with st.chat_message("assistant"):
-                    st_cb = StreamHandler(st.empty())
+                    st.session_state['test'] = ""
+                    st_cb = StreamHandler(st.empty())        
                     result = chain.invoke({"input": user_query}, {"callbacks": [st_cb]})
                     response = result["response"]
                     st.session_state.messages.append(
                         {"role": "assistant", "content": response}
+                    
                     )            
     ## TODO: Make variable the avatar part isn't working here, and should be defined in the config file
     def display_msg(self,msg, author):

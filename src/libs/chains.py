@@ -1,38 +1,22 @@
 from langchain.callbacks.base import BaseCallbackHandler
 import streamlit as st
 
-class StreamHandler(BaseCallbackHandler):
-    
-    def __init__(self, container, initial_text=""):
-        self.container = container
-        self.text = initial_text
-
-    def on_llm_new_token(self, token: str, **kwargs):
-        self.text += token
-        self.container.markdown(self.text)
-
 def load_vectordb_from_disk(db_directory):
     from langchain_community.vectorstores import Chroma
     from langchain_community.embeddings import OllamaEmbeddings
     import os
 
-
-    # Specify the directory where the database is stored
-    
-
+    # TIP, if the context is coming up empty, its possible that the vectordb is not loaded properly. 
+    # TODO: produce error if vectorDB is empty after loading.
+    # Specify the directory where the database is stored    
     # Load the ChromaDB instance from the specified directory
     vectordb = Chroma(persist_directory=db_directory, embedding_function=OllamaEmbeddings())
-    print(os.listdir(db_directory))
+    #print(os.listdir(db_directory))
 
     ## Debugging path problems
     # q="ansible stuff"
     # found_docs = vectordb.similarity_search(q,k=10)
-
     # print(found_docs)
-    # import time
-
-    # # Pause execution for 5 seconds
-    # time.sleep(10)
     return vectordb
 
 def self_query_retriver_chain(vectordb):
@@ -105,7 +89,7 @@ def get_rag_chain_with_sources(vectordb):
     from langchain_community.chat_models import ChatOllama
     from langchain.globals import set_debug
 
-    set_debug(True)
+    set_debug(False)
     template = """Answer the question based on the context provided, be brief and polite
     refer to the user as seller and start with a greeting
     if user is asking for objections, provide the objections AND the responses to the objection
@@ -125,7 +109,7 @@ def get_rag_chain_with_sources(vectordb):
             streaming=True,
         )
     retriever = self_query_retriver_chain(vectordb)
-    print(retriever)
+    #print(retriever)
     #retriever=vectorstore.as_retriever()
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
@@ -144,7 +128,7 @@ def get_rag_chain_with_sources(vectordb):
     rag_chain_with_source = RunnableParallel(
         {"context": retriever, "question": RunnablePassthrough()}
     ).assign(response=rag_chain_from_docs)
-
+    
     
     return rag_chain_with_source
 
