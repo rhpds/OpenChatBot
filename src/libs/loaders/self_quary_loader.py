@@ -194,7 +194,7 @@ def vector_files(split_documents):
 
 
 ## Make new DB
-#loaded_documents = load_files(INPUT_DIR)
-#split_documents = split_files(loaded_documents)
-#vectordb = vector_files(split_documents)
+loaded_documents = load_files(INPUT_DIR)
+split_documents = split_files(loaded_documents)
+vectordb = vector_files(split_documents)
 

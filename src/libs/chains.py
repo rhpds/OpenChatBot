@@ -11,7 +11,7 @@ In this file, we will have no mention of Chainlit or Streamlit
 # from langchain_core.runnables import RunnablePassthrough
 #from langchain_core.runnables import RunnableParallel
 # from langchain_core.output_parsers import StrOutputParser
-
+#from langchain.globals import set_debug
 ## Loadmodel 
 #from langchain_community.chat_models import ChatOllama
 #from langchain.callbacks.manager import CallbackManager
@@ -138,12 +138,13 @@ def load_vectordb_from_disk(db_directory):
     import os
 
     vectordb = Chroma(persist_directory=db_directory, embedding_function=OllamaEmbeddings())
-    #print(os.listdir(db_directory))
+    print("Debugging path problems:\n")
+    print(os.listdir(db_directory))
 
-    ## Debugging path problems
-    # q="ansible stuff"
-    # found_docs = vectordb.similarity_search(q,k=10)
-    # print(found_docs)
+    # Debugging path problems
+    q="ansible stuff"
+    found_docs = vectordb.similarity_search(q,k=10)
+    print("Found docs:\n",found_docs)
     return vectordb
 
 
@@ -232,7 +233,7 @@ def get_rag_chain_with_sources(model,vectordb):
     # from langchain_community.vectorstores import Chroma
     # from langchain_community.embeddings import OllamaEmbeddings
     from langchain_community.chat_models import ChatOllama
-    # from langchain.globals import set_debug
+    from langchain.globals import set_debug
 
     """
     ## Function Name: `get_rag_chain_with_sources`
@@ -256,7 +257,7 @@ def get_rag_chain_with_sources(model,vectordb):
 
     """
     
-    #set_debug(True)
+    set_debug(True)
     
     
     template = """Answer the question based on the context provided, be brief and polite

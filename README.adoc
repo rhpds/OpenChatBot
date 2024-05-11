@@ -31,14 +31,14 @@ source venv/bin/activate
 +
 [source,sh]
 ----
-pip install -r requirements.txt
+pip install -r requirements_chainlit.txt
 ----
 
 . Run the Streamlit application
 +
 [source,sh]
 ----
-streamlit run src/main.py --server.port=8000
+chainlit run -h src/
 ----
 
 
