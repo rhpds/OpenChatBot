@@ -1,6 +1,3 @@
-
-
-
 def read_config_file(config_file):
     import yaml
     with open(config_file, 'r') as file:
