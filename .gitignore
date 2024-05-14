@@ -1,8 +1,15 @@
+# Mac stuff
+.DS_Store
+
+# Python stuff
 __pycache__
 venv
+
+# VSCode stuff
 ./vscode
 
 # Chroma persistance
 data/
+
 # Logs
 .files/
