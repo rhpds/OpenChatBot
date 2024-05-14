@@ -1,5 +1,8 @@
 __pycache__
 venv
 ./vscode
+
+# Chroma persistance
 data/
-# data/Sales_Rag/
+# Logs
+.files/
