@@ -1,14 +1,21 @@
 = Overview
 
+A simple LangChain based chatbot that offers two types of interaction
+
+
+* Simple chatbot directly using `ollama` to run `mistral`
+* Simple RAG Chatbot adding Chroma, Hugging Face Embeddings
 
 == Usage
 . Install ollama on your machine:
 +
+
 [source,sh]
 ----
 curl -fsSL https://ollama.com/install.sh | sh
-
 ----
++
+
 NOTE:  If you are running on Mac/Windows, just download from Ollama website: link:https://ollama.com/download/mac[ollama for mac] link:https://ollama.com/download/windows[ollama for windows]
 
 . Download your desired module:
@@ -29,30 +36,33 @@ source venv/bin/activate
 
 . Install the dependencies
 +
+
 [source,sh]
 ----
-pip install -r requirements_chainlit.txt
+pip install -r requirements.txt
 ----
 
-. Run the Streamlit application
+. Run the Chainlit application
 +
+
 [source,sh]
 ----
-chainlit run -h src/
+chainlit run -h src/main.py
 ----
-
 
 
 == Frameworks and Libraries
 
 * LangChain
-* Streamlit
-* Ollama (LLM Runtime)
-* Mistral (Company and LLM of the same name)
+* Chainlit
+* Ollama/Mistral
+
+=== RAG Stack additions
+
+* Chroma
+* Hugging Face Embeddings lib
 
 == Acknowledgments and Thanks
-
-NOTE: Originally drew very heavilye from link:https://github.com/shashankdeshpande/langchain-chatbot[langchain-chatbot]
 
 * Thanks to the authors of the following examples, libraries, patterns, and tools:
 * link:https://github.com/shashankdeshpande/langchain-chatbot[langchain-chatbot]
