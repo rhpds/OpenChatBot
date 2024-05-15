@@ -50,7 +50,9 @@ async def start():
 
     ## Setting the default chain
     # chain = memory_bot(cl.user_session.get("model"))
+    ## Do i need this, or should i just push it into invoke_handler?
     chain = await chain_selector(chat_settings["chain_name"])
+    
     cl.user_session.set("chain", chain)
 
 
@@ -63,36 +65,46 @@ async def main(message):
 
     ## Added stream_final_answer=True to enable nice streaming as we go along
 
-    cb = cl.AsyncLangchainCallbackHandler(
-        stream_final_answer=True,
-    )
-    cb.answer_reached = True
+    # cb = cl.AsyncLangchainCallbackHandler(
+    #     stream_final_answer=True,
+    # )
+    # cb.answer_reached = True
     ## This works with simple_bot() chain
     # result = await chain.acall(message.content, callbacks=[cb])
     ## this works with rag_bot() chain
 
     ## TODO: This part is broken atm, works for rag_bot but not simple_bot. This works differently with the different chains, we might need an invoke_handler function and a response_handler
+    #result = await invoke_handler(cl.user_session.get("chain_name"),message.content, callbacks=[cb])
+    result = await invoke_handler(cl.user_session.get("chain_name"),message.content)
+    await response_handler(cl.user_session.get("chain_name"),result)    
+    #answer = result["response"]
+    #await cl.Message(content=answer, elements=[]).send()
     
-    result = await chain.ainvoke(message.content, callbacks=[cb])
 
-    answer = result["response"]
+    
 
-    text_elements = []  # type: List[cl.Text]
-    unique_sources = set()
-    for element in result["context"]:
-        # print("ELEMENT:::", element)
-        # print("\n\n Page Content::: \n ",element.page_content)
-        source = element.metadata["source"]
-        ## TODO: need to remove this part, users will not need this, it's good for debug.
-        formatted_content = re.sub(r"\n", " ", element.page_content)
-        formatted_content = re.sub(r"\.", ".\n", formatted_content)
-        page_content = formatted_content
-        text_elements.append(
-            cl.Text(content=page_content, name=source, display="inline")
-            # Bad line cl.Text(url=source, name=source, display="inline")
-        )
+#result = await chain.ainvoke(message.content, callbacks=[cb])
 
-    await cl.Message(content=answer, elements=text_elements).send()
+    
+
+    # answer = result["response"]
+
+    # text_elements = []  # type: List[cl.Text]
+    # unique_sources = set()
+    # for element in result["context"]:
+    #     # print("ELEMENT:::", element)
+    #     # print("\n\n Page Content::: \n ",element.page_content)
+    #     source = element.metadata["source"]
+    #     ## TODO: need to remove this part, users will not need this, it's good for debug.
+    #     formatted_content = re.sub(r"\n", " ", element.page_content)
+    #     formatted_content = re.sub(r"\.", ".\n", formatted_content)
+    #     page_content = formatted_content
+    #     text_elements.append(
+    #         cl.Text(content=page_content, name=source, display="inline")
+    #         # Bad line cl.Text(url=source, name=source, display="inline")
+    #     )
+
+    # await cl.Message(content=answer, elements=text_elements).send()
 
 
 @cl.on_settings_update
@@ -120,4 +132,87 @@ async def chain_selector(selected_chain):
         print("Default action")
         chain = memory_bot(cl.user_session.get("model"))
         return chain
+
+
+async def invoke_handler(selected_chain,content):
+    print("DEBUG:chain_selector:", selected_chain)
+    cb = cl.AsyncLangchainCallbackHandler(
+        stream_final_answer=True,
+        )
+    cb.answer_reached = True
+
+    
+    if selected_chain == "Simple Chatbot":
+        print("memory_bot selected")
+
+        chain = await chain_selector(selected_chain)
+        cl.user_session.set("chain", chain)
+        result = await chain.acall(content, callbacks=[cb])
+        
+        return chain
+
+    elif selected_chain == "Sales RAG Chatbot":
+        print("Sales RAG Chatbot selected")
+        
+        chain = await chain_selector(selected_chain)
+        cl.user_session.set("chain", chain)
+        result = await chain.ainvoke(content, callbacks=[cb])
+        
+        return result
+
+    else:
+        print("Default action")
+        chain = await chain_selector(selected_chain)
+        cl.user_session.set("chain", chain)
+        result = await chain.acall(content, callbacks=[cb])
+        return result
+
+
+async def response_handler(selected_chain,result):
+    # print("DEBUG:chain_selector:", selected_chain)
+    # cb = cl.AsyncLangchainCallbackHandler(
+    #     stream_final_answer=True,
+    #     )
+    # cb.answer_reached = True
+
+    
+    if selected_chain == "Simple Chatbot":
+        print("memory_bot selected")
+        # print("result is: ",result)
+        # for element in result:
+        #     print("element:", element)
+        # answer = result["response"]
+        # await cl.Message(content=answer, elements=[]).send()
+        return
+    elif selected_chain == "Sales RAG Chatbot":
+        print("Sales RAG Chatbot selected")
+        
+        answer = result["response"]
+
+        text_elements = []  # type: List[cl.Text]
+        unique_sources = set()
+        for element in result["context"]:
+            # print("ELEMENT:::", element)
+            # print("\n\n Page Content::: \n ",element.page_content)
+            source = element.metadata["source"]
+        ## TODO: need to remove this part, users will not need this, it's good for debug.
+            formatted_content = re.sub(r"\n", " ", element.page_content)
+            formatted_content = re.sub(r"\.", ".\n", formatted_content)
+            page_content = formatted_content
+            text_elements.append(
+                cl.Text(content=page_content, name=source, display="inline")
+                # Bad line cl.Text(url=source, name=source, display="inline")
+            )
+
+        await cl.Message(content=answer, elements=text_elements).send()
+        # content=""
+        # elements=[]
+        return answer, text_elements
+
+    else:
+        print("Default action")
+        chain = await chain_selector(selected_chain)
+        cl.user_session.set("chain", chain)
+        result = await chain.acall(content, callbacks=[cb])
+        return result
 

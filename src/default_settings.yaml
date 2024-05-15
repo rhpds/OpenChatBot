@@ -12,7 +12,7 @@ settings_data:
       values:
         - "Simple Chatbot"
         - "Sales RAG Chatbot"
-      initial_index: 1
+      initial_index: 0
     - type: "switch"
       id: "streaming"
       label: "Stream Tokens"
