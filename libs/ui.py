@@ -3,13 +3,20 @@ import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
 from libs.ai import setup_chain
 from langchain.schema.runnable.config import RunnableConfig
-
+from loguru import logger
+import sys
 
 @cl.on_chat_start
 async def on_chat_start():
-    await setup_chat_settings()
+    settings = await setup_chat_settings()
+    # logger.setLevel(logging.INFO)  # Set level to INFO, so DEBUG messages are ignored
+    # logger.info(f"Model: {settings['Model']}, Chains: {settings['Chains']}, Streaming: {settings['Streaming']}, Temperature: {settings['Temperature']}")
+    # logger.remove()  # Remove default handler
+    # logger.add(sys.stdout, level=settings["logging_level"], format="{time} {level} {message} (Function: {function})")
+    # logger.add("logfile.log", level="INFO", format="{time} {level} {message} (Function: {function})")
+    # logger.info("This info message will be shown.")
     chain = setup_chain()                                   # Setup the chain
-    cl.user_session.set("chain", chain)                     # Save the chain to the chainlit user session
+    cl.user_session.set("chain", chain)                     # Save the chain to the chainlit user_session
 
 
 @cl.on_message
@@ -26,6 +33,9 @@ async def on_message(message: cl.Message):
     await msg.send()
 
 async def setup_chat_settings():
+    """
+    Setup the chat settings, everything else from config.py
+    """
     settings = await cl.ChatSettings(
         [
             Select(
@@ -36,6 +46,18 @@ async def setup_chat_settings():
                     "llama2"
                 ],
                 initial_index=0,
+            ),
+            Select(
+                id="logging_level",
+                label="Logging Level",
+                values=[
+                    "DEBUG",
+                    "INFO",
+                    "WARNING",
+                    "ERROR",
+                    "CRITICAL",
+                ],
+                initial_index=1,
             ),
             Select(
                 id="Chains",
@@ -58,4 +80,5 @@ async def setup_chat_settings():
             ),
         ]
     ).send()
+    return settings
     # await setup_agent(settings)
