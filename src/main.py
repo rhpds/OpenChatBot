@@ -50,7 +50,7 @@ async def start():
 
     ## Setting the default chain
     # chain = memory_bot(cl.user_session.get("model"))
-    chain = await chain_selector(chat_settings["chain"])
+    chain = await chain_selector(chat_settings["chain_name"])
     cl.user_session.set("chain", chain)
 
 
@@ -72,6 +72,7 @@ async def main(message):
     ## this works with rag_bot() chain
 
     ## TODO: This part is broken atm, works for rag_bot but not simple_bot. This works differently with the different chains, we might need an invoke_handler function and a response_handler
+    
     result = await chain.ainvoke(message.content, callbacks=[cb])
 
     answer = result["response"]
@@ -100,7 +101,7 @@ async def update_settings(chat_settings):
     for key, value in chat_settings.items():
         print(f"Setting Key: {key}, Value: {value}")
         cl.user_session.set(key, value)
-    cl.user_session.set("chain", await chain_selector(chat_settings["chain"]))
+    cl.user_session.set("chain", await chain_selector(chat_settings["chain_name"]))
 
 
 async def chain_selector(selected_chain):
@@ -119,3 +120,4 @@ async def chain_selector(selected_chain):
         print("Default action")
         chain = memory_bot(cl.user_session.get("model"))
         return chain
+
