@@ -30,9 +30,6 @@ In this file, we will have no mention of Chainlit or Streamlit
 # from langchain_community.llms import Ollama
 
 
-
-
-
 def load_model(model):
     from langchain_community.chat_models import ChatOllama
     from langchain.callbacks.manager import CallbackManager
@@ -67,8 +64,9 @@ def load_model(model):
 
 
 def memory_bot(model):
-    from langchain.memory import ChatMessageHistory, ConversationBufferMemory
     from langchain.chains import ConversationChain
+    from langchain.memory import ChatMessageHistory, ConversationBufferMemory
+    from langchain_core.prompts.prompt import PromptTemplate
     '''
     ## Function Name: `memory_bot`
     
@@ -89,16 +87,26 @@ def memory_bot(model):
 
     '''
     print("memory_bot init")
-    message_history = ChatMessageHistory()
-    memory = ConversationBufferMemory(
+    message_history = ChatMessageHistory()                          # Create a memory object to store chat history
+    memory = ConversationBufferMemory(                              # Create a memory buffer to manage conversation state
         memory_key="history",
         output_key="response",
         chat_memory=message_history,
         return_messages=True,
     )
 
-    # Create a chain that uses the Chroma vector store
-    chain = ConversationChain(
+    # memory_bot needs a different prompt from RAG bot ie there is no need for the context prompt
+    # TODO: Move prompt setup to a settings file 
+    template = """The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.
+
+    Current conversation:
+    {history}
+    Human: {input}
+    AI Assistant:"""
+
+    prompt = PromptTemplate(input_variables=["history", "input"], template=template)
+    chain = ConversationChain(                                      # Create a chain that uses ConversationChain to manage conversation state
+        prompt=prompt,
         llm=load_model(model),
         memory=memory,
     )
@@ -128,7 +136,6 @@ def rag_bot(model,db_directory="./data/Sales_Rag"):
     vectordb = load_vectordb_from_disk(db_directory)
     #rag_chain = get_rag_chain_with_sources(vectordb)
     chain = get_rag_chain_with_sources(model,vectordb)
-
     return chain
 
 

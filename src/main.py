@@ -4,11 +4,11 @@ from libs.utils import *
 
 ## General Utils Repos
 import re
+from typing import Tuple, Any
 
 ## Chainlit Repos
 import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
-
 
 ## This isn't working as expected (Start should be called on either of these callbacks)
 @cl.on_settings_update
@@ -50,9 +50,10 @@ async def start():
 
     ## Setting the default chain
     # chain = memory_bot(cl.user_session.get("model"))
-    chain = await chain_selector(chat_settings["chain"])
-    cl.user_session.set("chain", chain)
-
+    chain, chain_type = await chain_selector(chat_settings["chain"])
+    print(f"DEBUG: chain_type: {chain_type}")
+    cl.user_session.set("chain", chain),
+    cl.user_session.set("chain_type", chain_type)
 
 @cl.on_message
 async def main(message):
@@ -72,8 +73,17 @@ async def main(message):
     ## this works with rag_bot() chain
 
     ## TODO: This part is broken atm, works for rag_bot but not simple_bot. This works differently with the different chains, we might need an invoke_handler function and a response_handler
-    result = await chain.ainvoke(message.content, callbacks=[cb])
+    # cl.user_session.get("chain_type") == "rag_bot"
 
+    if cl.user_session.get("chain_type") == "rag_bot":
+        print("DEBUG: rag_bot selected")
+        result = await chain.ainvoke(message.content, callbacks=[cb])
+    else:
+        print("DEBUG: memory_bot selected")
+        result = await chain.acall(message.content, callbacks=[cb])
+    # result = await chain.ainvoke(message.content, callbacks=[cb])
+
+    # print(f"DEBUG: result from chain: {result}")
     answer = result["response"]
 
     text_elements = []  # type: List[cl.Text]
@@ -102,20 +112,22 @@ async def update_settings(chat_settings):
         cl.user_session.set(key, value)
     cl.user_session.set("chain", await chain_selector(chat_settings["chain"]))
 
-
-async def chain_selector(selected_chain):
+async def chain_selector(selected_chain) -> Tuple[Any, str]:
     print("DEBUG:chain_selector:", selected_chain)
     if selected_chain == "Simple Chatbot":
         print("memory_bot selected")
         chain = memory_bot(cl.user_session.get("model"))
-        return chain
+        chain_type = "memory_bot"
+        return chain, chain_type
 
     elif selected_chain == "Sales RAG Chatbot":
         print("Sales RAG Chatbot selected")
         chain = rag_bot(cl.user_session.get("model"))
-        return chain
+        chain_type = "rag_bot"
+        return chain, chain_type
 
-    else:
-        print("Default action")
-        chain = memory_bot(cl.user_session.get("model"))
-        return chain
+    # else:
+    #     print("Default action")
+    #     chain = memory_bot(cl.user_session.get("model"))
+    #     chain_type = "rag_bot"
+    #     return chain, chain_type
