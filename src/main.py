@@ -11,7 +11,7 @@ from chainlit.input_widget import Select, Switch, Slider
 
 
 ## This isn't working as expected (Start should be called on either of these callbacks)
-@cl.on_settings_update
+#@cl.on_settings_update
 @cl.on_chat_start
 async def start():
     print("DEBUG: start() called")
@@ -24,44 +24,37 @@ async def start():
     ## These are the default settings that the user will use, they can change them in the setting button next to the message input text box
     default_settings = read_config_file(config_file)
     chat_settings = await setup_chat_settings(default_settings["settings_data"])
-    print(chat_settings)
+    #print(chat_settings)
     print("DEBUG: Chat Setting in start():", chat_settings)
     await update_settings(chat_settings)
 
+    await display_welcome_message(default_settings["welcome_message"])
+
+    # chain = await chain_selector(chat_settings["chain_name"])
+    # cl.user_session.set("chain", chain)
+
+async def display_welcome_message(welcome_message):
     """
     This section reads the default welcome message from the defaults_settings.yaml file and displays the initial welcome message
     """
 
-    welcome_message = cl.Message(content="Starting the bot...")
-    await welcome_message.send()
-
-    welcome_message = default_settings["welcome_message"]
     elements = [
         cl.Text(name="Disclaimer and Rules", content=welcome_message, display="inline")
     ]
     """
-    This prints the welcome message and sets the default chain based on the chain_selector function
-    Eventually, we will move to agents and chain_selector will become obsolete
+    This prints the welcome message
     """
     await cl.Message(
         content="",
         elements=elements,
     ).send()
 
-    ## Setting the default chain
-    # chain = memory_bot(cl.user_session.get("model"))
-    ## Do i need this, or should i just push it into invoke_handler?
-    chain = await chain_selector(chat_settings["chain_name"])
-    
-    cl.user_session.set("chain", chain)
-
-
 @cl.on_message
 async def main(message):
     """
     Processes incoming chat messages.
     """
-    chain = cl.user_session.get("chain")
+    #chain = cl.user_session.get("chain")
 
     ## Added stream_final_answer=True to enable nice streaming as we go along
 
@@ -109,7 +102,7 @@ async def main(message):
 
 @cl.on_settings_update
 async def update_settings(chat_settings):
-    print("DEBUG: on_settings_update", chat_settings)
+    print("DEBUG: update_settings(chat_settings):", chat_settings)
     for key, value in chat_settings.items():
         print(f"Setting Key: {key}, Value: {value}")
         cl.user_session.set(key, value)
@@ -145,27 +138,25 @@ async def invoke_handler(selected_chain,content):
     if selected_chain == "Simple Chatbot":
         print("memory_bot selected")
 
-        chain = await chain_selector(selected_chain)
-        cl.user_session.set("chain", chain)
+        chain = cl.user_session.get("chain")
         result = await chain.acall(content, callbacks=[cb])
         
-        return chain
+        return result
 
     elif selected_chain == "Sales RAG Chatbot":
         print("Sales RAG Chatbot selected")
         
-        chain = await chain_selector(selected_chain)
-        cl.user_session.set("chain", chain)
+        chain = cl.user_session.get("chain")
         result = await chain.ainvoke(content, callbacks=[cb])
         
         return result
 
-    else:
-        print("Default action")
-        chain = await chain_selector(selected_chain)
-        cl.user_session.set("chain", chain)
-        result = await chain.acall(content, callbacks=[cb])
-        return result
+    # else:
+    #     print("Default action")
+    #     chain = await chain_selector(selected_chain)
+    #     cl.user_session.set("chain", chain)
+    #     result = await chain.acall(content, callbacks=[cb])
+    #     return result
 
 
 async def response_handler(selected_chain,result):

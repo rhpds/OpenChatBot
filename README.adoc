@@ -30,7 +30,7 @@ ollama download mistral
 
 [source,sh]
 ----
-python3.11 -m venv venv         # The .gitignore prevents your venv from being committed
+python3.11 -m venv venv
 source venv/bin/activate
 ----
 

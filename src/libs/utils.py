@@ -1,4 +1,5 @@
 def read_config_file(config_file):
+    print("DEBUG: read_config_file(config_file):",config_file)
     import yaml
     with open(config_file, 'r') as file:
         config_vars = yaml.safe_load(file)
@@ -8,6 +9,8 @@ def read_config_file(config_file):
 async def setup_chat_settings(chat_settings_defaults):
     import chainlit as cl
     from chainlit.input_widget import Select, Switch, Slider
+    print("DEBUG: setup_chat_settings(chat_settings_defaults):",chat_settings_defaults)
+
 
     widgets = []
     print(chat_settings_defaults)
@@ -21,6 +24,7 @@ async def setup_chat_settings(chat_settings_defaults):
         widgets.append(widget)
     
     #print("widgets: \n ", widgets)
+    
     settings = await cl.ChatSettings(widgets).send()
     
     return settings
