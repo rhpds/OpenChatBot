@@ -25,6 +25,7 @@ settings_data:
       max: 2
       step: 0.1
 
+### This is not the same as what will appear in the "readme" panel, that comes from: chainlit.md
 welcome_message: |
 
   ## Important Notice:
