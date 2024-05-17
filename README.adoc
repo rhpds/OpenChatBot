@@ -22,7 +22,11 @@ NOTE:  If you are running on Mac/Windows, just download from Ollama website: lin
 +
 [source,sh]
 ----
-ollama download mistral
+ollama pull mistral
+
+# optional models
+ollama pull sroecker/granite-7b-lab
+ollama pull sroecker/merlinite
 ----
 
 . Create a new virtual environment (or if you are comfortable with it, use an existing environment)

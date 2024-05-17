@@ -3,7 +3,7 @@ In this file, we will have no mention of Chainlit or Streamlit
 
 '''
 
-def load_model(model):
+async def load_model(model):
     from langchain_community.chat_models import ChatOllama
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -59,6 +59,7 @@ def memory_bot(model):
 
     '''
     print("memory_bot init")
+    print("model:",model)
     message_history = ChatMessageHistory()
     memory = ConversationBufferMemory(
         memory_key="history",
@@ -69,7 +70,7 @@ def memory_bot(model):
 
     # Create a chain that uses the Chroma vector store
     chain = ConversationChain(
-        llm=load_model(model),
+        llm=model,
         memory=memory,
     )
     return chain
@@ -169,7 +170,7 @@ def self_query_retriver_chain(model,vectordb):
 
 
     #llm = Ollama(model="mistral",temperature=0, verbose=True)
-    llm = load_model(model)
+    llm = model
     retriever = SelfQueryRetriever.from_llm(
         llm,
         vectordb,
@@ -236,7 +237,7 @@ def get_rag_chain_with_sources(model,vectordb):
 
     prompt = ChatPromptTemplate.from_template(template)
     #llm = Ollama(model="mistral")
-    llm = load_model(model)
+    llm = model
     retriever = self_query_retriver_chain(model,vectordb)
     
     def format_docs(docs):

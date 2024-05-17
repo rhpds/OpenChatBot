@@ -1,10 +1,12 @@
 settings_data:
     - type: "select"
-      id: "model"
+      id: "model_name"
       label: "Ollama - Model"
       values:
         - "mistral"
         - "llama2"
+        - "granite-7b-lab"
+        - "sroecker/merlinite"
       initial_index: 0
     - type: "select"
       id: "chain_name"

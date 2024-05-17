@@ -106,25 +106,27 @@ async def update_settings(chat_settings):
     for key, value in chat_settings.items():
         print(f"Setting Key: {key}, Value: {value}")
         cl.user_session.set(key, value)
+    cl.user_session.set("model", await load_model(chat_settings["model_name"]))
     cl.user_session.set("chain", await chain_selector(chat_settings["chain_name"]))
+
 
 
 async def chain_selector(selected_chain):
     print("DEBUG:chain_selector:", selected_chain)
     if selected_chain == "Simple Chatbot":
-        print("memory_bot selected")
+        print("chain_selector: memory_bot selected")
         chain = memory_bot(cl.user_session.get("model"))
         return chain
 
     elif selected_chain == "Sales RAG Chatbot":
-        print("Sales RAG Chatbot selected")
+        print("chain_selector: Sales RAG Chatbot selected")
         chain = rag_bot(cl.user_session.get("model"))
         return chain
 
-    else:
-        print("Default action")
-        chain = memory_bot(cl.user_session.get("model"))
-        return chain
+    # else:
+    #     print("Default action")
+    #     chain = memory_bot(cl.user_session.get("model"))
+    #     return chain
 
 
 async def invoke_handler(selected_chain,content):
@@ -133,6 +135,7 @@ async def invoke_handler(selected_chain,content):
         stream_final_answer=True,
         )
     cb.answer_reached = True
+    #cb.on_llm_new_token = True
 
     
     if selected_chain == "Simple Chatbot":
@@ -200,10 +203,10 @@ async def response_handler(selected_chain,result):
         # elements=[]
         return answer, text_elements
 
-    else:
-        print("Default action")
-        chain = await chain_selector(selected_chain)
-        cl.user_session.set("chain", chain)
-        result = await chain.acall(content, callbacks=[cb])
-        return result
+    # else:
+    #     print("Default action")
+    #     chain = await chain_selector(selected_chain)
+    #     cl.user_session.set("chain", chain)
+    #     result = await chain.acall(content, callbacks=[cb])
+    #     return result
 
