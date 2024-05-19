@@ -19,7 +19,7 @@ async def on_chat_start():
     try:
         settings = await setup_chat_settings()
         setup_logging(settings["logging_level"])
-        chain = setup_chain()  # Setup the chain
+        chain = setup_chain()
         cl.user_session.set(
             "chain", chain
         )  # Save the chain to the chainlit user_session
@@ -37,11 +37,16 @@ async def on_chat_start():
 
 @cl.on_settings_update
 async def on_settings_update():
-    settings = await setup_chat_settings()
-    setup_logging(settings["logging_level"])
-    chain = setup_chain()  # Setup the chain
-    cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
-    logger.info("Exiting")
+    try:
+        settings = await setup_chat_settings()
+        setup_logging(settings["logging_level"])
+        # chain = setup_chain()  # Setup the chain
+        # cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
+        # cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
+        logger.info("OpenChatBot settings update complete")
+    except Exception as e:
+        logger.error(f"Error during setup: {e}")
+    # logger.info("Exiting")
 
 
 @cl.on_message
@@ -71,8 +76,8 @@ async def setup_chat_settings():
                 initial_index=0,
             ),
             Select(
-                id="Chains",
-                label="Chains",
+                id="bot_type",
+                label="Bot Type",
                 values=["chatbot_llm", "chabot_rag"],
                 initial_index=1,
             ),

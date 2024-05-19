@@ -20,9 +20,6 @@ MODEL = "mistral"
 
 system_persona = "You are a helpful AI assistant that can answer any question. Explain your reasoning and provide sources when possible."
 
-#    logger.info(f"INFO: entering function: {function}")
-
-# logger.info(f"INFO: exciting function: {function}")
 
 def setup_llm():
     llm = ChatOllama(
