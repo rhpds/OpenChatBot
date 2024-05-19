@@ -6,31 +6,51 @@ from langchain.schema.runnable.config import RunnableConfig
 from loguru import logger
 import sys
 
+
+def setup_logging(logging_level: str = "DEBUG"):
+    """
+    Setup the logging level, typically from the chat settings
+    logging_level: str - The logging level to set: TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
+    """
+
+    logger.remove()  # Remove default handler
+    logger.add(sys.stdout, level=logging_level)
+    logger.add("app-logging.log", level=logging_level)
+    logger.info(f"Logging level set to: {logging_level}")
+
+
 @cl.on_chat_start
 async def on_chat_start():
     settings = await setup_chat_settings()
-    # logger.setLevel(logging.INFO)  # Set level to INFO, so DEBUG messages are ignored
-    # logger.info(f"Model: {settings['Model']}, Chains: {settings['Chains']}, Streaming: {settings['Streaming']}, Temperature: {settings['Temperature']}")
-    # logger.remove()  # Remove default handler
-    # logger.add(sys.stdout, level=settings["logging_level"], format="{time} {level} {message} (Function: {function})")
-    # logger.add("logfile.log", level="INFO", format="{time} {level} {message} (Function: {function})")
-    # logger.info("This info message will be shown.")
-    chain = setup_chain()                                   # Setup the chain
-    cl.user_session.set("chain", chain)                     # Save the chain to the chainlit user_session
+    setup_logging(settings["logging_level"])
+    # logger.info("Entering")
+    chain = setup_chain()  # Setup the chain
+    cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
+    logger.info("Exiting")
+
+
+@cl.on_settings_update
+async def on_settings_update():
+    settings = await setup_chat_settings()
+    setup_logging(settings["logging_level"])
+    chain = setup_chain()  # Setup the chain
+    cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
+    logger.info("Exiting")
 
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    chain = cl.user_session.get("chain")                    # 1. Retreive chain from user session
+    chain = cl.user_session.get("chain")  # 1. Retreive chain from user session
     msg = cl.Message(content="")
 
-    async for chunk in chain.astream(                       # 2. Run the chain aynchronously
+    async for chunk in chain.astream(  # 2. Run the chain aynchronously
         {"question": message.content, "system_persona": cfg.SYSTEM_PERSONA},
         config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
     ):
         await msg.stream_token(chunk)
 
     await msg.send()
+
 
 async def setup_chat_settings():
     """
@@ -41,28 +61,27 @@ async def setup_chat_settings():
             Select(
                 id="Model",
                 label="Ollama - Model",
-                values=[
-                    "mistral",
-                    "llama2"
-                ],
+                values=["mistral", "llama2"],
                 initial_index=0,
-            ),
-            Select(
-                id="logging_level",
-                label="Logging Level",
-                values=[
-                    "DEBUG",
-                    "INFO",
-                    "WARNING",
-                    "ERROR",
-                    "CRITICAL",
-                ],
-                initial_index=1,
             ),
             Select(
                 id="Chains",
                 label="Chains",
                 values=["chatbot_llm", "chabot_rag"],
+                initial_index=1,
+            ),
+            Select(
+                id="logging_level",
+                label="Logging Level",
+                values=[
+                    "TRACE",
+                    "DEBUG",
+                    "INFO",
+                    "SUCCESS",
+                    "WARNING",
+                    "ERROR",
+                    "CRITICAL",
+                ],
                 initial_index=1,
             ),
             Switch(
