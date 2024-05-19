@@ -1,19 +1,38 @@
 import config as cfg
 import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
+
 from libs.ai import setup_chain
+import libs.ai as ai
 from langchain.schema.runnable.config import RunnableConfig
+
 from libs.utils import *
 
 
 @cl.on_chat_start
 async def on_chat_start():
-    settings = await setup_chat_settings()
-    setup_logging(settings["logging_level"])
-    # logger.info("Entering")
-    chain = setup_chain()  # Setup the chain
-    cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
-    logger.info("Exiting")
+    """
+    Initial setup run on start AND on new chat, setting up:
+    * logging (loguru via lib/utils.py)
+    * chain (from lib/ai.py), store in chainlit user_session
+    """
+    try:
+        settings = await setup_chat_settings()
+        setup_logging(settings["logging_level"])
+        chain = setup_chain()  # Setup the chain
+        cl.user_session.set(
+            "chain", chain
+        )  # Save the chain to the chainlit user_session
+        logger.info("OpenChatBot setup complete")
+    except Exception as e:
+        logger.error(f"Error during setup: {e}")
+
+    # settings = await setup_chat_settings()
+    # setup_logging(settings["logging_level"])
+    # # logger.info("Entering")
+    # chain = setup_chain()  # Setup the chain
+    # cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
+    # logger.info("Exiting")
 
 
 @cl.on_settings_update

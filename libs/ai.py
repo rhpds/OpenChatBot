@@ -44,5 +44,8 @@ def setup_prompt():
 def setup_chain():
     llm = setup_llm()
     prompt = setup_prompt()
-    chain = prompt | llm | StrOutputParser()
+    chain = ( prompt 
+        | llm 
+        | StrOutputParser()
+    )
     return chain
