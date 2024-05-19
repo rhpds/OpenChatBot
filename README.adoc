@@ -66,3 +66,41 @@ chainlit run -h src/main.py
 
 * Thanks to the authors of the following examples, libraries, patterns, and tools:
 * link:https://github.com/shashankdeshpande/langchain-chatbot[langchain-chatbot]
+
+== Directoy Stucture
+.
+├── README.adoc
+├── app-logging.log
+├── app.py
+├── archive
+│   └── streamlit-source
+│       └── libs
+├── chainlit.md
+├── config.py
+├── data
+│   ├── Sales_Rag
+│   │   ├── b282cb20-4b61-44ce-902f-f306170aa098
+│   │   └── chroma.sqlite3
+│   └── data.md
+├── libs
+│   ├── ai.py
+│   ├── ui.py
+│   └── utils.py
+├── public
+│   ├── avatar-redhat.png
+│   ├── custom.css
+│   ├── logo_dark.png
+│   └── logo_light.png
+├── requirements.txt
+└── src
+    ├── default_config.py
+    ├── default_settings.yaml
+    ├── libs
+    │   ├── __init__.py
+    │   ├── chains.py
+    │   ├── loaders
+    │   │   └── self_quary_loader.py
+    │   └── utils.py
+    └── main.py
+
+11 directories, 22 files

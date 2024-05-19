@@ -3,20 +3,7 @@ import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
 from libs.ai import setup_chain
 from langchain.schema.runnable.config import RunnableConfig
-from loguru import logger
-import sys
-
-
-def setup_logging(logging_level: str = "DEBUG"):
-    """
-    Setup the logging level, typically from the chat settings
-    logging_level: str - The logging level to set: TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
-    """
-
-    logger.remove()  # Remove default handler
-    logger.add(sys.stdout, level=logging_level)
-    logger.add("app-logging.log", level=logging_level)
-    logger.info(f"Logging level set to: {logging_level}")
+from libs.utils import *
 
 
 @cl.on_chat_start
