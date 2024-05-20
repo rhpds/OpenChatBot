@@ -49,10 +49,10 @@ def setup_prompt():
 def setup_chain():
     llm = setup_llm()
     prompt = setup_prompt()
-    chat_history_for_chain = ChatMessageHistory()
 
     chain = prompt | llm | StrOutputParser()
 
+    chat_history_for_chain = ChatMessageHistory()
     chain_with_message_history = RunnableWithMessageHistory(
         chain,
         lambda session_id: chat_history_for_chain,
@@ -60,4 +60,4 @@ def setup_chain():
         history_messages_key="chat_history",
     )
 
-    return chain_with_message_history
+    return chain_with_message_history, chat_history_for_chain

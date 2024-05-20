@@ -1,3 +1,4 @@
+from chainlit import logger
 import config as cfg
 import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
@@ -19,20 +20,12 @@ async def on_chat_start():
     try:
         settings = await setup_chat_settings()
         setup_logging(settings["logging_level"])
-        chain = setup_chain()
-        cl.user_session.set(
-            "chain", chain
-        )  # Save the chain to the chainlit user_session
+        chain, chain_history = setup_chain()
+        cl.user_session.set("chain", chain)
+        cl.user_session.set("chain_history", chain_history)
         logger.info("OpenChatBot setup complete")
     except Exception as e:
         logger.error(f"Error during setup: {e}")
-
-    # settings = await setup_chat_settings()
-    # setup_logging(settings["logging_level"])
-    # # logger.info("Entering")
-    # chain = setup_chain()  # Setup the chain
-    # cl.user_session.set("chain", chain)  # Save the chain to the chainlit user_session
-    # logger.info("Exiting")
 
 
 @cl.on_settings_update
@@ -53,24 +46,25 @@ async def on_settings_update():
 async def on_message(message: cl.Message):
     logger.info("Entered")
     chain = cl.user_session.get("chain")  # 1. Retrieve chain from user session
+    chain_history = cl.user_session.get("chain_history")
     msg = cl.Message(content="")
+
+    answer_prefix_tokens = ["FINAL", "ANSWER"]
+    cb = cl.AsyncLangchainCallbackHandler(
+        stream_final_answer=True,
+        answer_prefix_tokens=answer_prefix_tokens,
+    )
 
     async for chunk in chain.astream(  # 2. Run the chain aynchronously
         {
             "question": message.content,
             "system_persona": cfg.SYSTEM_PERSONA,
         },
-        {"configurable": {"session_id": "unused", "stream_final_answer": False}},
-        # config=RunnableConfig(
-        #     callbacks=[
-        #         cl.AsyncLangchainCallbackHandler(
-        #             stream_final_answer=True,
-        #             answer_prefix_tokens=answer_prefix_tokens,
-        #             # session_id=session_id,
-        #             # configurable=configurable,
-        #         )
-        #     ]
-        # ),
+        # {"configurable": {"session_id": "unused", "stream_final_answer": True}},
+        config=RunnableConfig(
+            callbacks=[cb],
+            configurable={"session_id": chain_history},
+        ),
     ):
         await msg.stream_token(chunk)
 
