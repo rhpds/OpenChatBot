@@ -51,16 +51,31 @@ async def on_settings_update():
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    chain = cl.user_session.get("chain")  # 1. Retreive chain from user session
+    logger.info("Entered")
+    chain = cl.user_session.get("chain")  # 1. Retrieve chain from user session
     msg = cl.Message(content="")
 
     async for chunk in chain.astream(  # 2. Run the chain aynchronously
-        {"question": message.content, "system_persona": cfg.SYSTEM_PERSONA},
-        config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
+        {
+            "question": message.content,
+            "system_persona": cfg.SYSTEM_PERSONA,
+        },
+        {"configurable": {"session_id": "unused", "stream_final_answer": False}},
+        # config=RunnableConfig(
+        #     callbacks=[
+        #         cl.AsyncLangchainCallbackHandler(
+        #             stream_final_answer=True,
+        #             answer_prefix_tokens=answer_prefix_tokens,
+        #             # session_id=session_id,
+        #             # configurable=configurable,
+        #         )
+        #     ]
+        # ),
     ):
         await msg.stream_token(chunk)
 
     await msg.send()
+    logger.info("Exited")
 
 
 async def setup_chat_settings():
