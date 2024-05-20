@@ -2,35 +2,8 @@
 In this file, we will have no mention of Chainlit or Streamlit
 
 '''
-#load vector
-# from langchain_community.vectorstores import Chroma
 
-
-## rag chain
-# from langchain.prompts import ChatPromptTemplate
-# from langchain_core.runnables import RunnablePassthrough
-#from langchain_core.runnables import RunnableParallel
-# from langchain_core.output_parsers import StrOutputParser
-#from langchain.globals import set_debug
-## Loadmodel 
-#from langchain_community.chat_models import ChatOllama
-#from langchain.callbacks.manager import CallbackManager
-# from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-
-
-## Simple chatbot
-#from langchain.chains import ConversationChain
-#from langchain.memory import ChatMessageHistory, ConversationBufferMemory
-
-
-
-### Can these be removed?
-# from langchain import hub
-# from langchain_community.embeddings import OllamaEmbeddings
-# from langchain_community.llms import Ollama
-
-
-def load_model(model):
+async def load_model(model):
     from langchain_community.chat_models import ChatOllama
     from langchain.callbacks.manager import CallbackManager
     from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -87,27 +60,18 @@ def memory_bot(model):
 
     '''
     print("memory_bot init")
-    message_history = ChatMessageHistory()                          # Create a memory object to store chat history
-    memory = ConversationBufferMemory(                              # Create a memory buffer to manage conversation state
+    print("model:",model)
+    message_history = ChatMessageHistory()
+    memory = ConversationBufferMemory(
         memory_key="history",
         output_key="response",
         chat_memory=message_history,
         return_messages=True,
     )
 
-    # memory_bot needs a different prompt from RAG bot ie there is no need for the context prompt
-    # TODO: Move prompt setup to a settings file 
-    template = """The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.
-
-    Current conversation:
-    {history}
-    Human: {input}
-    AI Assistant:"""
-
-    prompt = PromptTemplate(input_variables=["history", "input"], template=template)
-    chain = ConversationChain(                                      # Create a chain that uses ConversationChain to manage conversation state
-        prompt=prompt,
-        llm=load_model(model),
+    # Create a chain that uses the Chroma vector store
+    chain = ConversationChain(
+        llm=model,
         memory=memory,
     )
     return chain
@@ -145,13 +109,13 @@ def load_vectordb_from_disk(db_directory):
     import os
 
     vectordb = Chroma(persist_directory=db_directory, embedding_function=OllamaEmbeddings())
-    print("Debugging path problems:\n")
-    print(os.listdir(db_directory))
+    # print("Debugging path problems:\n")
+    # print(os.listdir(db_directory))
 
     # Debugging path problems
-    q="ansible stuff"
-    found_docs = vectordb.similarity_search(q,k=10)
-    print("Found docs:\n",found_docs)
+    # q="ansible stuff"
+    # found_docs = vectordb.similarity_search(q,k=10)
+    # print("Found docs:\n",found_docs)
     return vectordb
 
 
@@ -206,7 +170,7 @@ def self_query_retriver_chain(model,vectordb):
 
 
     #llm = Ollama(model="mistral",temperature=0, verbose=True)
-    llm = load_model(model)
+    llm = model
     retriever = SelfQueryRetriever.from_llm(
         llm,
         vectordb,
@@ -231,14 +195,10 @@ def self_query_retriver_chain(model,vectordb):
 
     
 def get_rag_chain_with_sources(model,vectordb):
-    # from langchain_community.llms import Ollama
     from langchain_core.output_parsers import StrOutputParser
-    # #from langchain_community.output_parsers.rail_parser import GuardrailsOutputParser as StrOutputParser
     from langchain.prompts import ChatPromptTemplate
     from langchain_core.runnables import RunnablePassthrough
     from langchain_core.runnables import RunnableParallel
-    # from langchain_community.vectorstores import Chroma
-    # from langchain_community.embeddings import OllamaEmbeddings
     from langchain_community.chat_models import ChatOllama
     from langchain.globals import set_debug
 
@@ -269,8 +229,6 @@ def get_rag_chain_with_sources(model,vectordb):
     
     template = """Answer the question based on the context provided, be brief and polite
     refer to the user as seller and start with a greeting
-    if user is asking for objections, provide the objections AND the responses to the objection
-
     <context>
     {context}
     </context>
@@ -279,7 +237,7 @@ def get_rag_chain_with_sources(model,vectordb):
 
     prompt = ChatPromptTemplate.from_template(template)
     #llm = Ollama(model="mistral")
-    llm = load_model(model)
+    llm = model
     retriever = self_query_retriver_chain(model,vectordb)
     
     def format_docs(docs):
