@@ -13,3 +13,4 @@ data/
 
 # Logs
 .files/
+app-logging.log
