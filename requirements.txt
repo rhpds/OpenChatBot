@@ -2,7 +2,7 @@ chainlit==1.0.506
 PyYAML==6.0.1
 chromadb==0.5.0
 langchain==0.1.17
-langchain_community==0.0.36
+langchain_community==0.2.5
 
 
 #langchain
